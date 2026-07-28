@@ -1,5 +1,6 @@
 import vinext from "vinext";
 import { defineConfig } from "vite";
+import { nitro } from "nitro/vite";
 import hostingConfig from "./.openai/hosting.json";
 import { sites } from "./build/sites-vite-plugin";
 
@@ -10,6 +11,7 @@ const { d1, r2 } = hostingConfig;
 
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
+const isVercel = process.env.VERCEL === "1";
 
 const localBindingConfig = {
   main: "./worker/index.ts",
@@ -47,13 +49,9 @@ export default defineConfig(async () => {
     server: isCodexSeatbeltSandbox
       ? { watch: { useFsEvents: false, usePolling: true } }
       : undefined,
-    plugins: [
-      vinext(),
-      sites(),
-      cloudflare({
-        viteEnvironment: { name: "rsc", childEnvironments: ["ssr"] },
-        config: localBindingConfig,
-      }),
-    ],
+    plugins: [vinext(), sites(), ...(isVercel ? [nitro()] : [cloudflare({
+      viteEnvironment: { name: "rsc", childEnvironments: ["ssr"] },
+      config: localBindingConfig,
+    })])],
   };
 });
