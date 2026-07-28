@@ -37,7 +37,7 @@ yarn-error.log*
 # typescript
 next-env.d.ts
 /dist/
-/build/
+/build/v11/
 /.pnpm-store/
 /.wrangler/
 /outputs/
